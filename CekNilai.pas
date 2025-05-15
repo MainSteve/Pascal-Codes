@@ -6,7 +6,14 @@ var
   lanjut: char;
   valid: boolean;
 
+  // Variabel tambahan
+  totalNilai, jumlahInput: integer;
+  rataRata: real;
+
 begin
+  totalNilai := 0;
+  jumlahInput := 0;
+
   repeat
     
     // Header program
@@ -35,6 +42,10 @@ begin
         valid := true;
       end;
     end;
+
+    // Tambahkan nilai ke total dan jumlah input
+    totalNilai := totalNilai + nilai;
+    jumlahInput := jumlahInput + 1;
     
     // Penentuan kategori nilai
     if nilai >= 85 then
@@ -70,6 +81,17 @@ begin
     
   until (upcase(lanjut) = 'T');
   
+  // Tampilkan statistik tambahan
+  writeln;
+  writeln('========== STATISTIK ==========');
+  writeln('Jumlah nilai dimasukkan: ', jumlahInput);
+  if jumlahInput > 0 then
+  begin
+    rataRata := totalNilai / jumlahInput;
+    writeln('Rata-rata nilai        : ', rataRata:0:2);
+  end;
+  writeln('===============================');
+
   // Pesan penutup
   writeln;
   writeln('Terima kasih telah menggunakan program ini!');
