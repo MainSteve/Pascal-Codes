@@ -26,7 +26,7 @@ var
   Pilihan, Jumlah: integer;
   TotalHarga, SubTotal: real;
   Lanjut: char;
-  i: integer; // Variabel untuk loop
+  i, MenuTersedia: integer; // Variabel untuk loop dan cek menu
 
 begin
   { Inisialisasi daftar menu }
@@ -64,18 +64,41 @@ begin
     write('Masukkan jumlah pesanan untuk ', Menu[Pilihan].Nama, ': ');
     readln(Jumlah);
 
-    { Menghitung subtotal dan total harga }
+    { Menghitung subtotal }
     SubTotal := Menu[Pilihan].Harga * Jumlah;
-    TotalHarga := TotalHarga + SubTotal;
+    
+    { Cek apakah menu ini sudah pernah dipesan sebelumnya }
+    MenuTersedia := 0;
+    for i := 1 to JumlahPesanan do
+    begin
+      if Pesanan[i].MenuIndex = Pilihan then
+      begin
+        MenuTersedia := i;
+        break;
+      end;
+    end;
 
-    { Menyimpan pesanan ke dalam array }
-    JumlahPesanan := JumlahPesanan + 1;
-    Pesanan[JumlahPesanan].MenuIndex := Pilihan;
-    Pesanan[JumlahPesanan].Jumlah := Jumlah;
-    Pesanan[JumlahPesanan].SubTotal := SubTotal;
+    { Jika menu sudah ada, update jumlah dan subtotal }
+    if MenuTersedia > 0 then
+    begin
+      Pesanan[MenuTersedia].Jumlah := Pesanan[MenuTersedia].Jumlah + Jumlah;
+      Pesanan[MenuTersedia].SubTotal := Pesanan[MenuTersedia].SubTotal + SubTotal;
+    end
+    { Jika menu belum ada, tambahkan sebagai pesanan baru }
+    else
+    begin
+      JumlahPesanan := JumlahPesanan + 1;
+      Pesanan[JumlahPesanan].MenuIndex := Pilihan;
+      Pesanan[JumlahPesanan].Jumlah := Jumlah;
+      Pesanan[JumlahPesanan].SubTotal := SubTotal;
+    end;
+
+    { Update total harga }
+    TotalHarga := TotalHarga + SubTotal;
 
     writeln('Subtotal untuk ', Menu[Pilihan].Nama, ': Rp.', Format('%.0n', [SubTotal]));
     writeln('Total sementara: Rp.', Format('%.0n', [TotalHarga]));
+    writeln();
 
     { Menanyakan apakah ingin memesan lagi }
     write('Apakah Anda ingin memesan menu lain? (y/n): ');
