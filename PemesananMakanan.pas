@@ -23,10 +23,10 @@ var
   Menu: array[1..MAX_MENU] of TMenu;
   Pesanan: array[1..MAX_PESANAN] of TPesanan; // Array untuk menyimpan daftar pesanan
   JumlahPesanan: integer; // Jumlah jenis pesanan yang dilakukan
-  Pilihan, Jumlah: integer;
+  Pilihan, Jumlah, UbahIndex, JumlahBaru: integer;
   TotalHarga, SubTotal: real;
-  Lanjut: char;
-  i, MenuTersedia: integer; // Variabel untuk loop dan cek menu
+  Lanjut, PilihMenu: char;
+  i, j, MenuTersedia: integer; // Variabel untuk loop dan cek menu
 
 begin
   { Inisialisasi daftar menu }
@@ -38,71 +38,160 @@ begin
 
   TotalHarga := 0;
   JumlahPesanan := 0; // Inisialisasi jumlah pesanan
+  PilihMenu := 'y';   // Mulai dengan menampilkan menu
 
   repeat
-    writeln('Daftar Menu:');
-    writeln('-----------------------------------');
-    for Pilihan := 1 to MAX_MENU do
-      writeln(Pilihan, '. ', Menu[Pilihan].Nama, ' - Rp.', Format('%.0n', [Menu[Pilihan].Harga]));
-    writeln('-----------------------------------');
-
-    { Memilih menu }
-    write('Pilih nomor menu yang ingin dipesan (1-', MAX_MENU, '): ');
-    readln(Pilihan);
-
-    if (Pilihan < 1) or (Pilihan > MAX_MENU) then
+    { Tampilkan daftar menu jika diinginkan }
+    if (PilihMenu = 'y') or (PilihMenu = 'Y') then
     begin
-      writeln();
-      writeln('=======================================');
-      writeln('Pilihan tidak valid. Pilih angka 1-5.');
-      writeln('=======================================');
-      writeln();
-      continue;
-    end;
+      writeln('Daftar Menu:');
+      writeln('-----------------------------------');
+      for Pilihan := 1 to MAX_MENU do
+        writeln(Pilihan, '. ', Menu[Pilihan].Nama, ' - Rp.', Format('%.0n', [Menu[Pilihan].Harga]));
+      writeln('-----------------------------------');
 
-    { Memasukkan jumlah pesanan }
-    write('Masukkan jumlah pesanan untuk ', Menu[Pilihan].Nama, ': ');
-    readln(Jumlah);
+      { Memilih menu }
+      write('Pilih nomor menu yang ingin dipesan (1-', MAX_MENU, '): ');
+      readln(Pilihan);
 
-    { Menghitung subtotal }
-    SubTotal := Menu[Pilihan].Harga * Jumlah;
-    
-    { Cek apakah menu ini sudah pernah dipesan sebelumnya }
-    MenuTersedia := 0;
-    for i := 1 to JumlahPesanan do
-    begin
-      if Pesanan[i].MenuIndex = Pilihan then
+      if (Pilihan < 1) or (Pilihan > MAX_MENU) then
       begin
-        MenuTersedia := i;
-        break;
+        writeln();
+        writeln('=======================================');
+        writeln('Pilihan tidak valid. Pilih angka 1-5.');
+        writeln('=======================================');
+        writeln();
+        continue;
       end;
+
+      { Memasukkan jumlah pesanan }
+      write('Masukkan jumlah pesanan untuk ', Menu[Pilihan].Nama, ': ');
+      readln(Jumlah);
+
+      { Menghitung subtotal }
+      SubTotal := Menu[Pilihan].Harga * Jumlah;
+      
+      { Cek apakah menu ini sudah pernah dipesan sebelumnya }
+      MenuTersedia := 0;
+      for i := 1 to JumlahPesanan do
+      begin
+        if Pesanan[i].MenuIndex = Pilihan then
+        begin
+          MenuTersedia := i;
+          break;
+        end;
+      end;
+
+      { Jika menu sudah ada, update jumlah dan subtotal }
+      if MenuTersedia > 0 then
+      begin
+        Pesanan[MenuTersedia].Jumlah := Pesanan[MenuTersedia].Jumlah + Jumlah;
+        Pesanan[MenuTersedia].SubTotal := Pesanan[MenuTersedia].SubTotal + SubTotal;
+      end
+      { Jika menu belum ada, tambahkan sebagai pesanan baru }
+      else
+      begin
+        JumlahPesanan := JumlahPesanan + 1;
+        Pesanan[JumlahPesanan].MenuIndex := Pilihan;
+        Pesanan[JumlahPesanan].Jumlah := Jumlah;
+        Pesanan[JumlahPesanan].SubTotal := SubTotal;
+      end;
+
+      { Update total harga }
+      TotalHarga := TotalHarga + SubTotal;
+
+      writeln('Subtotal untuk ', Menu[Pilihan].Nama, ': Rp.', Format('%.0n', [SubTotal]));
+      writeln('Total sementara: Rp.', Format('%.0n', [TotalHarga]));
+      writeln();
+      
+      PilihMenu := 'n'; // Reset ke tidak memilih menu
     end;
 
-    { Jika menu sudah ada, update jumlah dan subtotal }
-    if MenuTersedia > 0 then
+    { Menampilkan pesanan saat ini }
+    if JumlahPesanan > 0 then
     begin
-      Pesanan[MenuTersedia].Jumlah := Pesanan[MenuTersedia].Jumlah + Jumlah;
-      Pesanan[MenuTersedia].SubTotal := Pesanan[MenuTersedia].SubTotal + SubTotal;
+      writeln('Pesanan Anda saat ini:');
+      writeln('------------------------------------------');
+      for i := 1 to JumlahPesanan do
+      begin
+        writeln(
+          i, '. ', 
+          Menu[Pesanan[i].MenuIndex].Nama, ' x', 
+          Pesanan[i].Jumlah, ' = Rp.', 
+          Format('%.0n', [Pesanan[i].SubTotal])
+        );
+      end;
+      writeln('------------------------------------------');
     end
-    { Jika menu belum ada, tambahkan sebagai pesanan baru }
     else
     begin
-      JumlahPesanan := JumlahPesanan + 1;
-      Pesanan[JumlahPesanan].MenuIndex := Pilihan;
-      Pesanan[JumlahPesanan].Jumlah := Jumlah;
-      Pesanan[JumlahPesanan].SubTotal := SubTotal;
+      writeln('Belum ada pesanan.');
     end;
 
-    { Update total harga }
-    TotalHarga := TotalHarga + SubTotal;
-
-    writeln('Subtotal untuk ', Menu[Pilihan].Nama, ': Rp.', Format('%.0n', [SubTotal]));
-    writeln('Total sementara: Rp.', Format('%.0n', [TotalHarga]));
-    writeln();
-
-    { Menanyakan apakah ingin memesan lagi }
-    write('Apakah Anda ingin memesan menu lain? (y/n): ');
+    { Menanyakan apakah ingin memesan lagi atau mengubah pesanan }
+    writeln('Pilihan:');
+    writeln('y - Pesan menu lain');
+    writeln('u - Ubah jumlah atau hapus pesanan');
+    writeln('n - Selesai dan bayar');
+    write('Pilihan Anda (y/u/n): ');
     readln(Lanjut);
+    
+    { Jika ingin mengubah pesanan }
+    if (Lanjut = 'u') or (Lanjut = 'U') then
+    begin
+      if JumlahPesanan = 0 then
+      begin
+        writeln('Belum ada pesanan untuk diubah.');
+        continue;
+      end;
+      
+      write('Masukkan nomor pesanan yang ingin diubah (1-', JumlahPesanan, '): ');
+      readln(UbahIndex);
+      
+      if (UbahIndex < 1) or (UbahIndex > JumlahPesanan) then
+      begin
+        writeln('Nomor pesanan tidak valid.');
+        continue;
+      end;
+      
+      write('Masukkan jumlah baru untuk ', Menu[Pesanan[UbahIndex].MenuIndex].Nama, ' (0 untuk hapus): ');
+      readln(JumlahBaru);
+      
+      { Hitung perubahan pada total }
+      TotalHarga := TotalHarga - Pesanan[UbahIndex].SubTotal; // Kurangi subtotal lama
+      
+      if JumlahBaru = 0 then
+      begin
+        { Hapus pesanan dengan menggeser array }
+        for j := UbahIndex to JumlahPesanan - 1 do
+        begin
+          Pesanan[j] := Pesanan[j + 1];
+        end;
+        JumlahPesanan := JumlahPesanan - 1;
+        writeln('Pesanan dihapus.');
+      end
+      else
+      begin
+        { Update jumlah dan subtotal }
+        Pesanan[UbahIndex].Jumlah := JumlahBaru;
+        Pesanan[UbahIndex].SubTotal := Menu[Pesanan[UbahIndex].MenuIndex].Harga * JumlahBaru;
+        TotalHarga := TotalHarga + Pesanan[UbahIndex].SubTotal; // Tambah subtotal baru
+        writeln('Pesanan diperbarui.');
+      end;
+      
+      writeln('Total setelah perubahan: Rp.', Format('%.0n', [TotalHarga]));
+      writeln();
+      
+      { Tetap di menu ubah pesanan (tidak kembali ke daftar menu) }
+      PilihMenu := 'n';
+      Lanjut := 'u';
+    end
+    else if (Lanjut = 'y') or (Lanjut = 'Y') then
+    begin
+      { Kembali ke menu pemesanan }
+      PilihMenu := 'y';
+    end;
+    
   until (Lanjut = 'n') or (Lanjut = 'N');
 
   { Menampilkan struk pesanan }
